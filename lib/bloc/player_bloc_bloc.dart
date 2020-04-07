@@ -124,7 +124,6 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
             int myTotal = player.maal * event.totalPlayers;
             player.totalPay = (myTotal - toBeSubtracted) * game.ratePerPoint;
 //            print(player.totalPay);
-
             tempList.add(player.totalPay);
             print(tempList);
           }
