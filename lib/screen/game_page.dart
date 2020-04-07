@@ -8,6 +8,7 @@ import 'package:marriageappupdated/bloc/player_bloc_state.dart';
 import 'package:marriageappupdated/main.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
+import 'package:marriageappupdated/screen/initial_page.dart';
 import 'package:marriageappupdated/screen/scoreBoard.dart';
 import 'package:marriageappupdated/screen/settings_page.dart';
 
@@ -56,11 +57,17 @@ class _GamePageState extends State<GamePage> {
                       builder: (context, state) {
                         if (state is PlayerBlocInitial) {
                           game = state.gameRules;
+//                          print('game rate: ${game.ratePerPoint}');
                           return buildPlayerLoaded(context);
                         } else if (state is ScoreCalculated) {
                           scoreBoardList = state.scoreBoardList;
                           columnList = state.columnList;
+                          print(columnList);
                           rowList = state.rowList;
+                          for(var each in rowList){
+                            print("Each: $each");
+                          }
+                          print(rowList);
                           return Column(
                             children: <Widget>[
                               buildPlayerLoaded(context),
@@ -69,7 +76,7 @@ class _GamePageState extends State<GamePage> {
                             ],
                           );
                         } else if (state is PlayerLoaded) {
-//                          game = state.game;
+                          game = state.game;
                           return buildPlayerLoaded(context);
                         }
                       },
@@ -81,10 +88,14 @@ class _GamePageState extends State<GamePage> {
                     children: <Widget>[
                       GestureDetector(
                           onTap: () {
-                            Navigator.pop(context);
+                            Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => InitialPage()),
+                                (Route<dynamic> route) => false);
                           },
                           child: Icon(
-                            Icons.arrow_back,
+                            Icons.home,
                             size: 30.0,
                           )),
                       Row(
@@ -114,7 +125,7 @@ class _GamePageState extends State<GamePage> {
                           GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => SettingsPage(game: game)));
+                                    builder: (_) => SettingsPage(game:game)));
                               },
                               child: Icon(
                                 Icons.settings,
@@ -292,6 +303,10 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget scoreBoard(playerList, scoreBoardList, columnList, rowList) {
+    print("PlayerList: $playerList, ${playerList.length}");
+    print("scoreBoardList: $scoreBoardList, ${scoreBoardList.length}");
+    print("columnList: $columnList, ${columnList.length}");
+    print("rowList: $rowList, ${rowList.length}");
     return Expanded(
       child: Container(
         height: 150,

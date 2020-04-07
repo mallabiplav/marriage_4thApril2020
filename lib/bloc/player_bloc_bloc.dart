@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
+import 'package:marriageappupdated/model/previous_game_model.dart';
 import './bloc.dart';
 
 class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
-  final List<Player> playerList = [];
+  List<Player> playerList = [];
   List<String> calculatedScoreList;
   List<List> scoreBoardList = [];
   Game game = new Game();
@@ -17,8 +18,12 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
   List previousGames = [];
   List currentGame = [];
   List playerMaal = [];
-  final contactsBox = Hive.box('previousGames');
 
+//  List hiveBoxList = [];
+  final previousGamesBox = Hive.box('previousGames');
+
+//  List previousGamesList;
+//  PreviousGames previousGamesInstance = PreviousGames();
 
   @override
   PlayerBlocState get initialState => PlayerBlocInitial(game);
@@ -28,15 +33,15 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
     PlayerBlocEvent event,
   ) async* {
     yield PlayerBlocInitial(game);
-    currentGame = [];
     if (playerList.length > 0) {
-      print(scoreBoardList);
       if (scoreBoardList.isEmpty) {
-        currentGame.add(playerList);
+        print("Scoreboard: $scoreBoardList");
         yield PlayerLoaded(playerList, game);
       } else {
-        yield ScoreCalculated(
-            calculatedScoreList, scoreBoardList, columnList, rowList);
+        print("Scoreboard: $scoreBoardList");
+
+        getRows(scoreBoardList);
+        yield ScoreCalculated(scoreBoardList, columnList, rowList);
       }
     }
     if (playerList.length <= 0) {
@@ -61,6 +66,13 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
         yield PlayerLoaded(playerList, game);
       }
     }
+    if (event is DeletePreviousGames) {
+//      previousGamesBox.clear();
+    }
+    if (event is SetPreviousGameState) {
+      game = event.game;
+      playerList = event.playerList;
+    }
     if (event is CalculateScores) {
       calculatedScoreList = [];
       String statement;
@@ -72,10 +84,6 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       playerMaal = [];
 
       for (Player player in playerList) {
-//        print(player.playerName);
-//        print(player.seen);
-//        print(player.winner);
-//        print(player.dubli);
         if (player.seen != true) {
 //          print("Unseen");
           player.pointValue = game.pointsForUnseen;
@@ -135,54 +143,43 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       tempList.insert(winnerIndex, temp * -1);
       scoreBoardList.insert(0, tempList);
 
-//      if (player.seen == false) {
-//        statement =
-//        ("${player.playerName} is unseen, will pay: ${player.totalPay}");
-//      } else if (player.totalPay > 0) {
-//        statement = ("${player.playerName} wins ${player.totalPay}");
-//      } else if (player.totalPay < 0) {
-//        statement = ("${player.playerName} needs to pay ${player.totalPay}");
-//      } else if (player.totalPay == 0) {
-//        statement =
-//        ("${player.playerName} does not pay anything. Score: ${player.totalPay}");
-//      }
+      getColumns(playerList);
+      getRows(scoreBoardList);
 
-      for (Player player in playerList) {
-        DataColumn column = DataColumn(
-            label: Text(
-          player.playerName,
-          style: TextStyle(
-              fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black),
-        ));
-        columnList.add(column);
-      }
-      print(scoreBoardList);
-
-      for (var i in scoreBoardList) {
-        cellList = [];
-        for (var p in i) {
-          DataCell cell = DataCell(Text(p.toString()));
-          cellList.add(cell);
-        }
-        DataRow row = DataRow(cells: cellList);
-
-        rowList.add(row);
-      }
-
-      print(scoreBoardList);
-      List rowsAndColumn = [];
-      rowsAndColumn.add(columnList);
-      rowsAndColumn.add(rowList);
-
-      addPreviousGames(scoreBoardList, game);
-      yield ScoreCalculated(
-          calculatedScoreList, scoreBoardList, columnList, rowList);
+//      addPreviousGames(hiveBoxList);
+      yield ScoreCalculated(scoreBoardList, columnList, rowList);
     }
   }
 
-  void addPreviousGames(listOfRows, gameSettings) {
+  void addPreviousGames(hiveBoxList) {
     final previousGames = Hive.box('previousGames');
-    previousGames.add(listOfRows);
-    previousGames.add(gameSettings);
+    previousGames.add(hiveBoxList);
+  }
+
+  void getColumns(playerList) {
+    columnList = [];
+    for (Player player in playerList) {
+      DataColumn column = DataColumn(
+          label: Text(
+        player.playerName,
+        style: TextStyle(
+            fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black),
+      ));
+      columnList.add(column);
+    }
+  }
+
+  void getRows(scoreBoardList) {
+    rowList = [];
+    for (var i in scoreBoardList) {
+      cellList = [];
+      for (var p in i) {
+        DataCell cell = DataCell(Text(p.toString()));
+        cellList.add(cell);
+      }
+      DataRow row = DataRow(cells: cellList);
+
+      rowList.add(row);
+    }
   }
 }

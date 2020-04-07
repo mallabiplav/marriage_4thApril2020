@@ -31,8 +31,4 @@ class GameAdapter extends TypeAdapter<Game> {
       ..writeByte(12)
       ..write(obj.pointsForUnseen);
   }
-
-  @override
-  // TODO: implement typeId
-  int get typeId => null;
 }

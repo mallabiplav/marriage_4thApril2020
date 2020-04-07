@@ -7,6 +7,7 @@ import 'package:marriageappupdated/bloc/player_bloc_event.dart';
 import 'package:marriageappupdated/bloc/player_bloc_state.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
+import 'package:marriageappupdated/model/previous_game_model.dart';
 import 'package:marriageappupdated/screen/game_page.dart';
 import 'package:marriageappupdated/screen/settings_page.dart';
 
@@ -18,29 +19,24 @@ class InitialPage extends StatefulWidget {
 }
 
 class _InitialPageState extends State<InitialPage> {
-
   @override
   void initState() {
     super.initState();
-    Hive.registerAdapter(GameAdapter());
+//    Hive.registerAdapter(GameAdapter());
   }
+
 //  Player player;
   Game game;
 
-  int num = 0;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: Hive.openBox('previousGames'),
       builder: (context, snapshot) {
-        Hive.registerAdapter(GameAdapter());
         if (snapshot.connectionState == ConnectionState.done) {
-          print(num);
-          print("SSSS");
+          List listOfPreviousGames = snapshot.data.get(0);
+          snapshot.data.clear();
           print(snapshot.data.length);
-          print(snapshot.data.get(23));
-          print("AAA");
-          num += 1;
           if (snapshot.hasError) {
             return Container();
           } else {
@@ -62,7 +58,9 @@ class _InitialPageState extends State<InitialPage> {
                               HomePage(),
                               showCalculationRates(game),
                               newGamePreviousGame(),
-                              Expanded(child: previousGame()),
+                              Expanded(
+                                  child:
+                                      previousGame(listOfPreviousGames, game)),
                             ],
                           );
                         } else if (state is PlayerLoaded) {
@@ -109,27 +107,175 @@ class _InitialPageState extends State<InitialPage> {
     );
   }
 
-  Container previousGame() {
-    return Container(
-      height: 300,
-      width: 400,
-      margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            "Previous Games: ",
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-        ],
-      ),
-    );
+  Container previousGame(listOfPreviousGames, game) {
+    if (listOfPreviousGames != null) {
+      return Container(
+        height: 300,
+        width: 400,
+        margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  "Previous Games: ",
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    // ignore: close_sinks
+                    final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
+                    playerBloc.add(DeletePreviousGames());
+                  },
+                  child: Chip(
+                    label: Text(
+                      "Delete all",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              height: 350,
+              child: ListView.builder(
+                itemCount: listOfPreviousGames.length,
+                itemBuilder: (context, int index) {
+                  PreviousGames gameState = listOfPreviousGames[index];
+                  print(listOfPreviousGames[index].game.pointsForSeen);
+                  return GestureDetector(
+                    onTap: () {
+                      // ignore: close_sinks
+                      final playerBloc =
+                          BlocProvider.of<PlayerBlocBloc>(context);
+                      playerBloc.add(SetPreviousGameState(gameState.game,
+                          gameState.playerList, gameState.scoreBoardList));
+                      game = gameState.game;
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                              value: BlocProvider.of<PlayerBlocBloc>(context),
+                              child: GamePage(
+                                playerList:
+                                    listOfPreviousGames[index].playerList,
+                              ))));
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white70),
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            height: 30,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount:
+                                  listOfPreviousGames[index].playerList.length,
+                              itemBuilder: (context, int secondIndex) {
+                                return Row(
+                                  children: <Widget>[
+                                    Text(
+                                      listOfPreviousGames[index]
+                                              .playerList[secondIndex]
+                                              .playerName +
+                                          "",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                    SizedBox(
+                                      width: 8,
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          Container(
+                              child: Column(
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Text("Rate per Point: ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                  Text(
+                                      listOfPreviousGames[index]
+                                          .game
+                                          .ratePerPoint
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text("Points for Seen: ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                  Text(
+                                      listOfPreviousGames[index]
+                                          .game
+                                          .pointsForSeen
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text("Points for Unseen: ",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                  Text(
+                                      listOfPreviousGames[index]
+                                          .game
+                                          .pointsForUnseen
+                                          .toString(),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12)),
+                                ],
+                              ),
+
+                            ],
+                          )),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        height: 300,
+        width: 400,
+        margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+        padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
+        child: Text("No Previous Games"),
+      );
+    }
   }
 
   Container showCalculationRates(game) {
@@ -164,16 +310,12 @@ class _InitialPageState extends State<InitialPage> {
                   width: 35,
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: game.ratePerPoint.toString(),
-                    ),
-                    onTap: () {
-                      setState(() {
-                        InputDecoration(
-                          hintText: "AA",
-                        );
-                      });
-                    },
+
+//                      hintText: game.ratePerPoint.toString(),
+                        ),
                     textAlign: TextAlign.center,
+                    controller: TextEditingController(
+                        text: game.ratePerPoint.toString()),
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: false),
                     onChanged: (value) {
@@ -348,6 +490,10 @@ class _InitialPageState extends State<InitialPage> {
                           child: RaisedButton(
                             child: Text("Submit"),
                             onPressed: () {
+                              // ignore: close_sinks
+                              final playerBloc =
+                                  BlocProvider.of<PlayerBlocBloc>(context);
+                              playerBloc.add(SubmitEvent());
                               Navigator.of(context).push(MaterialPageRoute(
                                   builder: (_) => BlocProvider.value(
                                       value: BlocProvider.of<PlayerBlocBloc>(

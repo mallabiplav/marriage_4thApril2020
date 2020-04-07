@@ -34,13 +34,13 @@ class PlayerLoaded extends PlayerBlocState {
 
 
 class ScoreCalculated extends PlayerBlocState {
-  final List<String> calculatedScoreList;
+//  final List<String> calculatedScoreList;
   final List<List> scoreBoardList;
   final List<DataColumn> columnList;
   final List<DataRow> rowList;
 
-  const ScoreCalculated(this.calculatedScoreList, this.scoreBoardList, this.columnList, this.rowList);
+  const ScoreCalculated( this.scoreBoardList, this.columnList, this.rowList);
 
   @override
-  List<Object> get props => [calculatedScoreList, scoreBoardList, columnList,rowList];
+  List<Object> get props => [scoreBoardList, columnList,rowList];
 }

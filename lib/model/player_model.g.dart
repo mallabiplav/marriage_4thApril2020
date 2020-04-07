@@ -43,8 +43,4 @@ class PlayerAdapter extends TypeAdapter<Player> {
       ..writeByte(26)
       ..write(obj.dubli);
   }
-
-  @override
-  // TODO: implement typeId
-  int get typeId => null;
 }

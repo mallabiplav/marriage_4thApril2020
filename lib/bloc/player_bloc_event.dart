@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
+import 'package:marriageappupdated/model/previous_game_model.dart';
 
 abstract class PlayerBlocEvent extends Equatable {
   const PlayerBlocEvent();
@@ -43,6 +44,12 @@ class DeletePlayer extends PlayerBlocEvent {
   @override
   List<Object> get props => [index];
 }
+class DeletePreviousGames extends PlayerBlocEvent {
+  const DeletePreviousGames();
+
+  @override
+  List<Object> get props => [];
+}
 
 class CalculateScores extends PlayerBlocEvent {
   final int totalPlayers;
@@ -63,6 +70,25 @@ class SetRules extends PlayerBlocEvent {
 
   @override
   List<Object> get props => [gamerules];
+}
+
+class SubmitEvent extends PlayerBlocEvent {
+
+  const SubmitEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class SetPreviousGameState extends PlayerBlocEvent {
+  final Game game;
+  final List<Player> playerList;
+  final List scoreBoardList;
+
+  const SetPreviousGameState(this.game, this.playerList, this.scoreBoardList);
+
+  @override
+  List<Object> get props => [game, playerList, scoreBoardList];
 }
 
 

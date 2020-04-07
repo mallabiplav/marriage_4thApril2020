@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       height: 50,
                       width: 50,
                       child: TextField(
-                        textAlign: TextAlign.center,
+
                         decoration: InputDecoration(
                           hintText: widget.game.ratePerPoint.toString(),
                         ),
@@ -51,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       width: 50,
                       child: TextField(
                         textAlign: TextAlign.center,
+
                         decoration: InputDecoration(
                           hintText: widget.game.pointsForSeen.toString(),
                         ),
