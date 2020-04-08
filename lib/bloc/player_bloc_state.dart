@@ -35,7 +35,7 @@ class PlayerLoaded extends PlayerBlocState {
 
 class ScoreCalculated extends PlayerBlocState {
 //  final List<String> calculatedScoreList;
-  final List<List> scoreBoardList;
+  final List scoreBoardList;
   final List<DataColumn> columnList;
   final List<DataRow> rowList;
 

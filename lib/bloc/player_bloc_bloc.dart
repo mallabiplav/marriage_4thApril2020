@@ -9,8 +9,8 @@ import './bloc.dart';
 
 class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
   List<Player> playerList = [];
-  List<String> calculatedScoreList;
-  List<List> scoreBoardList = [];
+  List calculatedScoreList;
+  List scoreBoardList = [];
   Game game = new Game();
   List<DataColumn> columnList = [];
   List<DataRow> rowList = [];
@@ -23,7 +23,7 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
   final previousGamesBox = Hive.box('previousGames');
 
 //  List previousGamesList;
-//  PreviousGames previousGamesInstance = PreviousGames();
+  PreviousGames previousGamesInstance = PreviousGames();
 
   @override
   PlayerBlocState get initialState => PlayerBlocInitial(game);
@@ -33,17 +33,18 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
     PlayerBlocEvent event,
   ) async* {
     yield PlayerBlocInitial(game);
-    if (playerList.length > 0) {
-      if (scoreBoardList.isEmpty) {
-        print("Scoreboard: $scoreBoardList");
-        yield PlayerLoaded(playerList, game);
-      } else {
-        print("Scoreboard: $scoreBoardList");
-
-        getRows(scoreBoardList);
-        yield ScoreCalculated(scoreBoardList, columnList, rowList);
-      }
-    }
+//    if (playerList.length > 0) {
+//      yield PlayerLoaded(playerList, game);
+//
+////      if (scoreBoardList.isEmpty) {
+////        print("Scoreboard: $scoreBoardList");
+////      } else {
+////        print("Scoreboard Not eMpty: $scoreBoardList");
+////
+////        getRows(scoreBoardList);
+////        yield ScoreCalculated(scoreBoardList, columnList, rowList);
+////      }
+//    }
     if (playerList.length <= 0) {
       yield PlayerBlocInitial(game);
     }
@@ -57,6 +58,7 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
     if (event is AddPlayer) {
       playerList.insert(0, event.player);
       if (playerList.length > 0) {
+        print("Player List: $playerList, Game: ${game.pointsForUnseen}");
         yield PlayerLoaded(playerList, game);
       }
     }
@@ -67,11 +69,42 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       }
     }
     if (event is DeletePreviousGames) {
-//      previousGamesBox.clear();
+      previousGamesBox.clear();
     }
     if (event is SetPreviousGameState) {
       game = event.game;
       playerList = event.playerList;
+    }
+    if (event is LoadPreviousGame) {
+      previousGames = previousGamesBox.getAt(0);
+
+      game = event.previousGamesInstance.game;
+      playerList = event.previousGamesInstance.playerList;
+      scoreBoardList = event.previousGamesInstance.scoreBoardList;
+
+      getColumns(playerList);
+      getRows(scoreBoardList);
+      yield ScoreCalculated(scoreBoardList, columnList, rowList);
+    }
+    if (event is SubmitEvent) {
+      previousGamesInstance = new PreviousGames();
+      previousGamesInstance.playerList = playerList;
+      previousGamesInstance.scoreBoardList = scoreBoardList;
+      previousGamesInstance.game = game;
+
+      void insertAtZero(previousGamesInstance, previousGames) {
+        previousGames.insert(0, previousGamesInstance);
+      }
+
+      print("PreviousGAmeBox ==== ${previousGamesBox.isEmpty}");
+      if (previousGamesBox.isEmpty == true) {
+        previousGames = [];
+        previousGamesBox.put(0, previousGames);
+        insertAtZero(previousGamesInstance, previousGames);
+      } else {
+        previousGames = previousGamesBox.getAt(0);
+        insertAtZero(previousGamesInstance, previousGames);
+      }
     }
     if (event is CalculateScores) {
       calculatedScoreList = [];
@@ -145,7 +178,13 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       getColumns(playerList);
       getRows(scoreBoardList);
 
-//      addPreviousGames(hiveBoxList);
+      print("This ran This many Times ");
+      previousGamesInstance.scoreBoardList = scoreBoardList;
+      previousGamesInstance.playerList = playerList;
+      previousGamesInstance.game = game;
+      previousGames.removeAt(0);
+      previousGames.insert(0, previousGamesInstance);
+      previousGamesBox.put(0, previousGames);
       yield ScoreCalculated(scoreBoardList, columnList, rowList);
     }
   }

@@ -35,8 +35,7 @@ class _InitialPageState extends State<InitialPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           List listOfPreviousGames = snapshot.data.get(0);
-          snapshot.data.clear();
-          print(snapshot.data.length);
+//          print(snapshot.data.length);
           if (snapshot.hasError) {
             return Container();
           } else {
@@ -108,6 +107,7 @@ class _InitialPageState extends State<InitialPage> {
   }
 
   Container previousGame(listOfPreviousGames, game) {
+//    print(listOfPreviousGames);
     if (listOfPreviousGames != null) {
       return Container(
         height: 300,
@@ -151,22 +151,25 @@ class _InitialPageState extends State<InitialPage> {
                 itemCount: listOfPreviousGames.length,
                 itemBuilder: (context, int index) {
                   PreviousGames gameState = listOfPreviousGames[index];
-                  print(listOfPreviousGames[index].game.pointsForSeen);
+//                  print(listOfPreviousGames[index].playerList);
                   return GestureDetector(
                     onTap: () {
+                      PreviousGames previousGames = gameState;
+                      listOfPreviousGames.removeAt(index);
+                      listOfPreviousGames.insert(0,previousGames);
+//                      print("Score: ${gameState.scoreBoardList}");
                       // ignore: close_sinks
                       final playerBloc =
                           BlocProvider.of<PlayerBlocBloc>(context);
-                      playerBloc.add(SetPreviousGameState(gameState.game,
-                          gameState.playerList, gameState.scoreBoardList));
-                      game = gameState.game;
+                      playerBloc.add(LoadPreviousGame(previousGames));
+                      game = previousGames.game;
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (_) => BlocProvider.value(
                               value: BlocProvider.of<PlayerBlocBloc>(context),
                               child: GamePage(
-                                playerList:
-                                    listOfPreviousGames[index].playerList,
-                              ))));
+                                  playerList:
+                                      previousGames.playerList,
+                                  game: previousGames.game))));
                     },
                     child: Container(
                       padding: EdgeInsets.all(10),
@@ -201,60 +204,74 @@ class _InitialPageState extends State<InitialPage> {
                               },
                             ),
                           ),
-                          Container(
-                              child: Column(
+                          Row(
+//                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Row(
+                              Container(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text("Rate per Point: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
-                                  Text(
-                                      listOfPreviousGames[index]
-                                          .game
-                                          .ratePerPoint
-                                          .toString(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text("Rate per Point: ",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                      Text(
+                                          listOfPreviousGames[index]
+                                              .game
+                                              .ratePerPoint
+                                              .toString(),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text("Points for Seen: ",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                      Text(
+                                          listOfPreviousGames[index]
+                                              .game
+                                              .pointsForSeen
+                                              .toString(),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text("Points for Unseen: ",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                      Text(
+                                          listOfPreviousGames[index]
+                                              .game
+                                              .pointsForUnseen
+                                              .toString(),
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 12)),
+                                    ],
+                                  ),
                                 ],
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text("Points for Seen: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
-                                  Text(
-                                      listOfPreviousGames[index]
-                                          .game
-                                          .pointsForSeen
-                                          .toString(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
-                                ],
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text("Points for Unseen: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
-                                  Text(
-                                      listOfPreviousGames[index]
-                                          .game
-                                          .pointsForUnseen
-                                          .toString(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12)),
-                                ],
-                              ),
-
+                              )),
+                              Icon(
+                                Icons.delete,
+                                color: Colors.red[200],
+                                size: 30,
+                              )
                             ],
-                          )),
+                          ),
                         ],
                       ),
                     ),
@@ -499,8 +516,8 @@ class _InitialPageState extends State<InitialPage> {
                                       value: BlocProvider.of<PlayerBlocBloc>(
                                           context),
                                       child: GamePage(
-                                        playerList: playerList,
-                                      ))));
+                                          playerList: playerList,
+                                          game: game))));
                             },
                           ),
                         ),

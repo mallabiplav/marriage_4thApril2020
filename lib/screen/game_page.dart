@@ -14,10 +14,11 @@ import 'package:marriageappupdated/screen/settings_page.dart';
 
 class GamePage extends StatefulWidget {
   final List playerList;
+  final Game game;
 
   const GamePage({
     Key key,
-    @required this.playerList,
+    @required this.playerList,this.game,
   }) : super(key: key);
 
   @override
@@ -28,18 +29,19 @@ class _GamePageState extends State<GamePage> {
   int totalMaal;
   var sum = 0;
   bool rad = false;
-  Game game;
+//  Game game;
   List scoreBoardList;
   List<DataColumn> columnList;
   List<DataRow> rowList;
+  int i = 0;
 
 //  List playerList;
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    BlocProvider.of<PlayerBlocBloc>(context)
-        .add(LoadListOfPlayers(widget.playerList));
-  }
+//  @override
+//  void didChangeDependencies() {
+//    super.didChangeDependencies();
+//    BlocProvider.of<PlayerBlocBloc>(context)
+//        .add(LoadListOfPlayers(widget.playerList));
+//  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,30 +57,45 @@ class _GamePageState extends State<GamePage> {
                     child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
                       // ignore: missing_return
                       builder: (context, state) {
-                        if (state is PlayerBlocInitial) {
-                          game = state.gameRules;
-//                          print('game rate: ${game.ratePerPoint}');
-                          return buildPlayerLoaded(context);
-                        } else if (state is ScoreCalculated) {
+//                        if (state is PlayerBlocInitial) {
+//                          print("INITIAL PLAYER STATE");
+//                          game = state.gameRules;
+////                          print('game rate: ${game.ratePerPoint}');
+//                          return buildPlayerLoaded(context);
+//                        }
+                        if (state is ScoreCalculated) {
                           scoreBoardList = state.scoreBoardList;
                           columnList = state.columnList;
                           print(columnList);
                           rowList = state.rowList;
-                          for(var each in rowList){
+                          for (var each in rowList) {
                             print("Each: $each");
                           }
                           print(rowList);
+                          print("ScoreBoard = $scoreBoardList}");
                           return Column(
                             children: <Widget>[
                               buildPlayerLoaded(context),
                               scoreBoard(widget.playerList, scoreBoardList,
                                   columnList, rowList),
+
                             ],
                           );
-                        } else if (state is PlayerLoaded) {
-                          game = state.game;
+                        } else {
                           return buildPlayerLoaded(context);
                         }
+//                        else if (state is PlayerLoaded) {
+//                          print("Player Loaed $i");
+//                          i++;
+//                          game = state.game;
+//                          return Column(
+//                            children: <Widget>[
+//                              buildPlayerLoaded(context),
+////                              scoreBoard(widget.playerList, scoreBoardList,
+////                                  columnList, rowList),
+//                            ],
+//                          );
+//                        }
                       },
                     )),
                 Container(
@@ -125,7 +142,7 @@ class _GamePageState extends State<GamePage> {
                           GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => SettingsPage(game:game)));
+                                    builder: (_) => SettingsPage(game: widget.game)));
                               },
                               child: Icon(
                                 Icons.settings,
@@ -303,45 +320,56 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget scoreBoard(playerList, scoreBoardList, columnList, rowList) {
-    print("PlayerList: $playerList, ${playerList.length}");
-    print("scoreBoardList: $scoreBoardList, ${scoreBoardList.length}");
-    print("columnList: $columnList, ${columnList.length}");
-    print("rowList: $rowList, ${rowList.length}");
-    return Expanded(
-      child: Container(
-        height: 150,
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.fromLTRB(15, 0, 15, 5),
-        decoration: BoxDecoration(
-          color: Color(0xfff0f7ff),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
+    if (scoreBoardList == null || scoreBoardList.isEmpty) {
+      return Container(
+          height: 150,
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.fromLTRB(15, 0, 15, 5),
+          decoration: BoxDecoration(
+            color: Color(0xfff0f7ff),
+            borderRadius: BorderRadius.circular(10),
+          ));
+    } else {
+//      print("PlayerList: $playerList, ${playerList.length}");
+//      print("scoreBoardList: $scoreBoardList, ${scoreBoardList.length}");
+//      print("columnList: $columnList, ${columnList.length}");
+//      print("rowList: $rowList, ${rowList.length}");
+      return Expanded(
+        child: Container(
+          height: 150,
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.fromLTRB(15, 0, 15, 5),
+          decoration: BoxDecoration(
+            color: Color(0xfff0f7ff),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
 //                    width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
 //                      color: Colors.green[100],
-                  ),
-                  height: 180,
-                  alignment: Alignment.topCenter,
-                  child: DataTable(
-                    columnSpacing: 30,
-                    columns: columnList,
-                    rows: rowList,
+                    ),
+                    height: 180,
+                    alignment: Alignment.topCenter,
+                    child: DataTable(
+                      columnSpacing: 30,
+                      columns: columnList,
+                      rows: rowList,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget buildPlayerWidget(Player player) {

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
 import 'package:marriageappupdated/model/previous_game_model.dart';
@@ -73,11 +74,20 @@ class SetRules extends PlayerBlocEvent {
 }
 
 class SubmitEvent extends PlayerBlocEvent {
+//  final PreviousGames previousGamesInstance;
 
   const SubmitEvent();
 
   @override
   List<Object> get props => [];
+}
+class LoadPreviousGame extends PlayerBlocEvent {
+  final PreviousGames previousGamesInstance;
+
+  const LoadPreviousGame(this.previousGamesInstance);
+
+  @override
+  List<Object> get props => [previousGamesInstance];
 }
 
 class SetPreviousGameState extends PlayerBlocEvent {
