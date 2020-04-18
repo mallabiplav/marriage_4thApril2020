@@ -22,17 +22,27 @@ class _InitialPageState extends State<InitialPage> {
   @override
   void initState() {
     super.initState();
+//    Hive.openBox('previousGames');
 //    Hive.registerAdapter(GameAdapter());
   }
 
+
 //  Player player;
   Game game;
+
+//  @override
+//  void didChangeDependencies() {
+//    super.didChangeDependencies();
+//    BlocProvider.of<PlayerBlocBloc>(context);
+////        .add(DeletePreviousGame());
+//  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: Hive.openBox('previousGames'),
       builder: (context, snapshot) {
+        print("Snapshot: $snapshot");
         if (snapshot.connectionState == ConnectionState.done) {
           List listOfPreviousGames = snapshot.data.get(0);
 //          print(snapshot.data.length);
@@ -50,6 +60,7 @@ class _InitialPageState extends State<InitialPage> {
                     child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
                       builder: (context, state) {
                         if (state is PlayerBlocInitial) {
+//                          Hive.openBox('previousGames');
                           game = state.gameRules;
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -65,7 +76,10 @@ class _InitialPageState extends State<InitialPage> {
                         } else if (state is PlayerLoaded) {
                           game = state.game;
                           return listOfPlayers(state.playerList, state.game);
-                        } else {
+                        }
+                        else if(state is PlayerDeleted){
+                          return CircularProgressIndicator();
+                        }else {
                           return CircularProgressIndicator();
                         }
                       },
@@ -108,12 +122,22 @@ class _InitialPageState extends State<InitialPage> {
 
   Container previousGame(listOfPreviousGames, game) {
 //    print(listOfPreviousGames);
-    if (listOfPreviousGames != null) {
+    if (listOfPreviousGames == null || listOfPreviousGames.length == 0) {
       return Container(
         height: 300,
         width: 400,
         margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
         padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
+        child: Text("No Previous Games"),
+      );
+    } else {
+      return Container(
+        height: 300,
+        width: 400,
+        margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
         child: Column(
@@ -126,27 +150,27 @@ class _InitialPageState extends State<InitialPage> {
                   "Previous Games: ",
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    // ignore: close_sinks
-                    final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
-                    playerBloc.add(DeletePreviousGames());
-                  },
-                  child: Chip(
-                    label: Text(
-                      "Delete all",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    backgroundColor: Colors.black87,
-                  ),
-                ),
+//                GestureDetector(
+//                  onTap: () {
+//                    // ignore: close_sinks
+//                    final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
+//                    playerBloc.add(DeletePreviousGames());
+//                  },
+//                  child: Chip(
+//                    label: Text(
+//                      "Delete all",
+//                      style: TextStyle(color: Colors.white),
+//                    ),
+//                    backgroundColor: Colors.black87,
+//                  ),
+//                ),
               ],
             ),
             SizedBox(
-              height: 10,
+              height: 15,
             ),
             Container(
-              height: 350,
+              height: 370 ,
               child: ListView.builder(
                 itemCount: listOfPreviousGames.length,
                 itemBuilder: (context, int index) {
@@ -156,7 +180,7 @@ class _InitialPageState extends State<InitialPage> {
                     onTap: () {
                       PreviousGames previousGames = gameState;
                       listOfPreviousGames.removeAt(index);
-                      listOfPreviousGames.insert(0,previousGames);
+                      listOfPreviousGames.insert(0, previousGames);
 //                      print("Score: ${gameState.scoreBoardList}");
                       // ignore: close_sinks
                       final playerBloc =
@@ -164,11 +188,10 @@ class _InitialPageState extends State<InitialPage> {
                       playerBloc.add(LoadPreviousGame(previousGames));
                       game = previousGames.game;
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => BlocProvider.value(
+                          builder: (context) => BlocProvider.value(
                               value: BlocProvider.of<PlayerBlocBloc>(context),
                               child: GamePage(
-                                  playerList:
-                                      previousGames.playerList,
+                                  playerList: previousGames.playerList,
                                   game: previousGames.game))));
                     },
                     child: Container(
@@ -265,10 +288,24 @@ class _InitialPageState extends State<InitialPage> {
                                   ),
                                 ],
                               )),
-                              Icon(
-                                Icons.delete,
-                                color: Colors.red[200],
-                                size: 30,
+                              GestureDetector(
+                                onTap: () {
+                                  // ignore: close_sinks
+                                  final playerBloc =
+                                      BlocProvider.of<PlayerBlocBloc>(context);
+                                  playerBloc.add(DeletePreviousGame(
+                                      listOfPreviousGames, index));
+//
+//                                  super.didChangeDependencies();
+//                                  BlocProvider.of<PlayerBlocBloc>(context).add(
+//                                      DeletePreviousGame(
+//                                          listOfPreviousGames, index));
+                                },
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.red[200],
+                                  size: 30,
+                                ),
                               )
                             ],
                           ),
@@ -281,16 +318,6 @@ class _InitialPageState extends State<InitialPage> {
             ),
           ],
         ),
-      );
-    } else {
-      return Container(
-        height: 300,
-        width: 400,
-        margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
-        padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10), color: Color(0xfff0f7ff)),
-        child: Text("No Previous Games"),
       );
     }
   }
@@ -335,6 +362,7 @@ class _InitialPageState extends State<InitialPage> {
                         text: game.ratePerPoint.toString()),
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: false),
+
                     onChanged: (value) {
                       game.ratePerPoint = int.parse(value);
                     },

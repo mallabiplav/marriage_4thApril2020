@@ -36,11 +36,23 @@ class PlayerLoaded extends PlayerBlocState {
 class ScoreCalculated extends PlayerBlocState {
 //  final List<String> calculatedScoreList;
   final List scoreBoardList;
-  final List<DataColumn> columnList;
-  final List<DataRow> rowList;
+  final DataRow totalMoneyRow;
 
-  const ScoreCalculated( this.scoreBoardList, this.columnList, this.rowList);
+  const ScoreCalculated( this.scoreBoardList, this.totalMoneyRow);
 
   @override
-  List<Object> get props => [scoreBoardList, columnList,rowList];
+  List<Object> get props => [scoreBoardList, totalMoneyRow];
 }
+
+class PlayerDeleted extends PlayerBlocState {
+  final bool deletedPlayer;
+//  final List<String> calculatedScoreList;
+
+
+  const PlayerDeleted(this.deletedPlayer);
+
+  @override
+  List<Object> get props => [deletedPlayer];
+}
+
+

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:marriageappupdated/bloc/player_bloc_bloc.dart';
 import 'package:marriageappupdated/bloc/player_bloc_event.dart';
 import 'package:marriageappupdated/bloc/player_bloc_state.dart';
@@ -18,7 +19,8 @@ class GamePage extends StatefulWidget {
 
   const GamePage({
     Key key,
-    @required this.playerList,this.game,
+    @required this.playerList,
+    this.game,
   }) : super(key: key);
 
   @override
@@ -29,61 +31,97 @@ class _GamePageState extends State<GamePage> {
   int totalMaal;
   var sum = 0;
   bool rad = false;
+
+  List dataRowList;
+
 //  Game game;
   List scoreBoardList;
-  List<DataColumn> columnList;
-  List<DataRow> rowList;
+  List columnList;
+  List rowList;
   int i = 0;
 
-//  List playerList;
+  DataRow totalMoneyRow;
+  List playerList;
+  List listOfPlayerNames = [];
+
+//  @override
+//  void initState(){
+//    super.initState();
+//    scoreBoardListFunc(playerList);
+//    print(listOfPlayerNames);
+//  }
 //  @override
 //  void didChangeDependencies() {
 //    super.didChangeDependencies();
-//    BlocProvider.of<PlayerBlocBloc>(context)
-//        .add(LoadListOfPlayers(widget.playerList));
+////    BlocProvider.of<PlayerBlocBloc>(context)
+////        .add(CalculateScores(playerList.length, totalMaal));
 //  }
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      child: SafeArea(
-        child: Scaffold(
-            backgroundColor: Colors.blue[100],
-            resizeToAvoidBottomPadding: false,
-            body: Stack(
-              children: <Widget>[
-                Container(
-                    padding: EdgeInsets.fromLTRB(0, 55, 0, 0),
-                    child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
-                      // ignore: missing_return
-                      builder: (context, state) {
-//                        if (state is PlayerBlocInitial) {
-//                          print("INITIAL PLAYER STATE");
+      child: WillPopScope(
+        onWillPop: () {
+          print("Pooperd");
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => MyApp()),
+            (Route<dynamic> route) => false,
+          );
+          // ignore: close_sinks
+          final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
+          playerBloc.add(GoToHomePage());
+//            Hive.close();
+        },
+        child: SafeArea(
+          child: Scaffold(
+              backgroundColor: Colors.blue[100],
+              resizeToAvoidBottomPadding: false,
+              body: Stack(
+                children: <Widget>[
+                  Container(
+                      padding: EdgeInsets.fromLTRB(0, 55, 0, 0),
+                      child: BlocListener<PlayerBlocBloc, PlayerBlocState>(
+                        listener: (context, state) {
+//                          print('bloc listener: $state');
+                        },
+                        child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
+                          // ignore: missing_return
+                          builder: (context, state) {
+                            if (state is PlayerBlocInitial) {
 //                          game = state.gameRules;
-////                          print('game rate: ${game.ratePerPoint}');
-//                          return buildPlayerLoaded(context);
-//                        }
-                        if (state is ScoreCalculated) {
-                          scoreBoardList = state.scoreBoardList;
-                          columnList = state.columnList;
-                          print(columnList);
-                          rowList = state.rowList;
-                          for (var each in rowList) {
-                            print("Each: $each");
-                          }
-                          print(rowList);
-                          print("ScoreBoard = $scoreBoardList}");
-                          return Column(
-                            children: <Widget>[
-                              buildPlayerLoaded(context),
-                              scoreBoard(widget.playerList, scoreBoardList,
-                                  columnList, rowList),
+//                          print('game rate: ${game.ratePerPoint}');
+                              return buildPlayerLoaded();
+                            } else if (state is ScoreCalculated) {
+                              scoreBoardList = state.scoreBoardList;
+                              totalMoneyRow = state.totalMoneyRow;
+                              if (scoreBoardList.length > 0) {
+                                return Column(
+                                  children: <Widget>[
+                                    buildPlayerLoaded(),
+                                    scoreBoard(widget.playerList,
+                                        scoreBoardList, totalMoneyRow),
+                                  ],
+                                );
+                              }
+                              else{
+                                return Column(
+                                  children: <Widget>[
+                                    buildPlayerLoaded(),
+                                  ],
+                                );
 
-                            ],
-                          );
-                        } else {
-                          return buildPlayerLoaded(context);
-                        }
+                              }
+//                              columnList = state.columnList;
+//                              print(columnList);
+//                              rowList = state.rowList;
+//                              for (var each in rowList) {
+////                                print("Each: $each");
+//                              }
+//                              print(rowList);
+//                              print("ScoreBoard = $scoreBoardList}");
+                            } else {
+                              return CircularProgressIndicator();
+                            }
 //                        else if (state is PlayerLoaded) {
 //                          print("Player Loaed $i");
 //                          i++;
@@ -96,70 +134,75 @@ class _GamePageState extends State<GamePage> {
 //                            ],
 //                          );
 //                        }
-                      },
-                    )),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      GestureDetector(
-                          onTap: () {
-                            Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => InitialPage()),
-                                (Route<dynamic> route) => false);
                           },
-                          child: Icon(
-                            Icons.home,
-                            size: 30.0,
-                          )),
-                      Row(
-                        children: <Widget>[
-                          GestureDetector(
+                        ),
+                      )),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        GestureDetector(
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (_) => ScoreBoard(
-                                        dataRow: rowList,
-                                        columnList: columnList,
-                                      )));
+                              Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => MyApp()));
+                              // ignore: close_sinks
+                              final playerBloc =
+                                  BlocProvider.of<PlayerBlocBloc>(context);
+                              playerBloc.add(GoToHomePage());
+                              Hive.close();
                             },
-                            child: Chip(
-                              backgroundColor: Colors.black87,
-                              label: Text(
-                                "Scoreboard",
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          GestureDetector(
+                            child: Icon(
+                              Icons.home,
+                              size: 30.0,
+                            )),
+                        Row(
+                          children: <Widget>[
+                            GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => SettingsPage(game: widget.game)));
+                                    builder: (_) => ScoreBoard(
+                                          playerList: widget.playerList,
+                                          game: widget.game,
+                                        )));
                               },
-                              child: Icon(
-                                Icons.settings,
-                                size: 30,
-                              )),
-                        ],
-                      ),
-                    ],
+                              child: Chip(
+                                backgroundColor: Colors.black87,
+                                label: Text(
+                                  "Scoreboard",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (_) =>
+                                          SettingsPage(game: widget.game)));
+                                },
+                                child: Icon(
+                                  Icons.settings,
+                                  size: 30,
+                                )),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )),
+                ],
+              )),
+        ),
       ),
     );
   }
 
-  Widget buildPlayerLoaded(context) {
+  Widget buildPlayerLoaded() {
     return Container(
       padding: EdgeInsets.all(5),
       child: Container(
@@ -295,7 +338,7 @@ class _GamePageState extends State<GamePage> {
                           Scaffold.of(context).showSnackBar(snackBar);
                         } else {
                           totalMaal = sum;
-                          calculateList(context, totalPlayers, totalMaal);
+                          calculateList(totalPlayers, totalMaal);
                         }
                       },
                     ),
@@ -319,7 +362,22 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  Widget scoreBoard(playerList, scoreBoardList, columnList, rowList) {
+  Widget scoreBoard(playerList, scoreBoardList, totalMoneyRow) {
+    double columnSpacing;
+    switch (playerList.length) {
+      case (2):
+        columnSpacing = 150;
+        break;
+      case (3):
+        columnSpacing = 90;
+        break;
+      case (4):
+        columnSpacing = 50;
+        break;
+      default:
+        columnSpacing = 20;
+        break;
+    }
     if (scoreBoardList == null || scoreBoardList.isEmpty) {
       return Container(
           height: 150,
@@ -358,9 +416,15 @@ class _GamePageState extends State<GamePage> {
                     height: 180,
                     alignment: Alignment.topCenter,
                     child: DataTable(
-                      columnSpacing: 30,
-                      columns: columnList,
-                      rows: rowList,
+                      dataRowHeight: 50,
+                      columnSpacing: columnSpacing,
+                      columns: widget.playerList.map<DataColumn>((player) {
+                        getDataRows(scoreBoardList, totalMoneyRow);
+                        return DataColumn(
+                          label: Text(player.playerName),
+                        );
+                      }).toList(),
+                      rows: dataRowList,
                     ),
                   ),
                 ),
@@ -384,6 +448,7 @@ class _GamePageState extends State<GamePage> {
               style: TextStyle(fontWeight: FontWeight.w500),
             )),
         Checkbox(
+          activeColor: Colors.green[300],
           value: player.winner,
           onChanged: (value) {
             for (Player eachPlayer in widget.playerList) {
@@ -399,7 +464,7 @@ class _GamePageState extends State<GamePage> {
         ),
         Switch(
           value: player.seen,
-          activeColor: Colors.green,
+          activeColor: Colors.green[300],
           onChanged: (value) {
             setState(() {
               player.seen = value;
@@ -413,7 +478,7 @@ class _GamePageState extends State<GamePage> {
         ),
         Switch(
           value: player.dubli,
-          activeColor: Colors.green,
+          activeColor: Colors.green[300],
           onChanged: (value) {
             setState(() {
               player.dubli = value;
@@ -425,19 +490,20 @@ class _GamePageState extends State<GamePage> {
         ),
         Container(
             padding: EdgeInsets.all(0),
-            height: 50,
-            width: 50,
+            height: 30,
+            width: 30,
             child: TextField(
               controller: TextEditingController(text: player.maal.toString()),
-              onChanged: (value) {
-                player.maal = int.parse(value);
-              },
+
               enabled: player.seen,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.numberWithOptions(decimal: false),
-              onSubmitted: (value) {
+              onChanged: (value) {
                 player.maal = int.parse(value);
               },
+//              onSubmitted: (value) {
+//                player.maal = int.parse(value);
+//              },
             )),
       ],
     );
@@ -449,9 +515,97 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  void calculateList(BuildContext context, int totalPlayers, int totalMaal) {
+  void scoreBoardListFunc(playerList) {
+    for (var each in playerList) {
+      Text text = Text(each);
+      rowList.add(text);
+    }
+  }
+
+  void calculateList(int totalPlayers, int totalMaal) {
     // ignore: close_sinks
     final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
     playerBloc.add(CalculateScores(totalPlayers, totalMaal));
+  }
+
+  void getDataRows(scoreBoardList, totalMoneyRow) {
+    dataRowList = scoreBoardList.asMap().entries.map<DataRow>((itemRow) {
+      AlertDialog alert = AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: new BorderRadius.circular(15)),
+        title: Text(
+          "Do you want to delete this round?",
+          style: TextStyle(fontSize: 15),
+        ),
+        actions: [
+          FlatButton(
+            child: Text("Yes"),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop('alert');
+
+              // ignore: close_sinks
+              final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
+              playerBloc.add(GetTotalMoney());
+              scoreBoardList.removeAt(itemRow.key);
+            },
+          ),
+          FlatButton(
+            child: Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop('alert');
+            },
+          ),
+        ],
+      );
+
+      return DataRow(
+        onSelectChanged: (value) {
+          setState(() {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return alert;
+              },
+            );
+          });
+        },
+        cells: itemRow.value.map<DataCell>((p) {
+          var color;
+          if (p < 0) {
+            color = Colors.red[100];
+          } else if (p > 0) {
+            color = Colors.green[100];
+          } else {
+            color = Colors.white;
+          }
+          return DataCell(
+            Stack(
+              children: <Widget>[
+                Center(
+                  child: Container(
+                      padding: EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
+                        color: color,
+                      ),
+                      child: Text(p.toString())),
+                ),
+                Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Text(
+                      (p / widget.game.ratePerPoint).abs().toStringAsFixed(0),
+                      style:
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                    )),
+              ],
+            ),
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    dataRowList.insert(0, totalMoneyRow);
+    print(dataRowList);
   }
 }

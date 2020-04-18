@@ -6,6 +6,7 @@ import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/previous_game_model.dart';
 import 'package:marriageappupdated/screen/game_page.dart';
 import 'package:marriageappupdated/screen/initial_page.dart';
+import 'package:marriageappupdated/screen/scoreBoardTrial.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 
 import 'model/player_model.dart';
@@ -25,8 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => PlayerBlocBloc(),
-      child:
-          MaterialApp(debugShowCheckedModeBanner: false, home: InitialPage()),
+      child:MaterialApp(debugShowCheckedModeBanner: false, home: InitialPage()),
     );
   }
 }

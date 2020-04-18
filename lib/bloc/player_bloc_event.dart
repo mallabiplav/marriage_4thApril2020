@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:marriageappupdated/model/game_model.dart';
 import 'package:marriageappupdated/model/player_model.dart';
 import 'package:marriageappupdated/model/previous_game_model.dart';
@@ -101,4 +102,38 @@ class SetPreviousGameState extends PlayerBlocEvent {
   List<Object> get props => [game, playerList, scoreBoardList];
 }
 
+class DeletePreviousGame extends PlayerBlocEvent{
+  final List previousGamesList;
+  final int index;
+  const DeletePreviousGame(this.previousGamesList, this.index);
+
+  @override
+  List<Object> get props => [previousGamesList, index];
+
+}
+class GetTotalMoney extends PlayerBlocEvent{
+  const GetTotalMoney();
+
+  @override
+  List<Object> get props => [];
+
+}
+
+class GoToHomePage extends PlayerBlocEvent{
+
+  const GoToHomePage();
+
+  @override
+  List<Object> get props => [];
+
+}
+
+class PlayerDeletedEvent extends PlayerBlocEvent{
+
+  const PlayerDeletedEvent();
+
+  @override
+  List<Object> get props => [];
+
+}
 
