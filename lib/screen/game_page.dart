@@ -59,58 +59,56 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: WillPopScope(
-        onWillPop: () {
-          print("Pooperd");
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => MyApp()),
-            (Route<dynamic> route) => false,
-          );
-          // ignore: close_sinks
-          final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
-          playerBloc.add(GoToHomePage());
+    return Scaffold(
+        backgroundColor: Colors.blue[100],
+        resizeToAvoidBottomPadding: false,
+        body: WillPopScope(
+          onWillPop: () async {
+//            print("Pooperd");
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => MyApp()),
+                  (Route<dynamic> route) => false,
+            );
+//            // ignore: close_sinks
+//            final playerBloc = BlocProvider.of<PlayerBlocBloc>(context);
+//            playerBloc.add(GoToHomePage());
 //            Hive.close();
-        },
-        child: SafeArea(
-          child: Scaffold(
-              backgroundColor: Colors.blue[100],
-              resizeToAvoidBottomPadding: false,
-              body: Stack(
-                children: <Widget>[
-                  Container(
-                      padding: EdgeInsets.fromLTRB(0, 55, 0, 0),
-                      child: BlocListener<PlayerBlocBloc, PlayerBlocState>(
-                        listener: (context, state) {
-//                          print('bloc listener: $state');
-                        },
-                        child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
-                          // ignore: missing_return
-                          builder: (context, state) {
-                            if (state is PlayerBlocInitial) {
+            return false;
+          },
+          child: SafeArea(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                    padding: EdgeInsets.fromLTRB(0, 55, 0, 0),
+                    child: BlocListener<PlayerBlocBloc, PlayerBlocState>(
+                      listener: (context, state) {
+                        print('bloc listener: $state');
+                      },
+                      child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
+                        // ignore: missing_return
+                        builder: (context, state) {
+                          if (state is PlayerBlocInitial) {
 //                          game = state.gameRules;
 //                          print('game rate: ${game.ratePerPoint}');
-                              return buildPlayerLoaded();
-                            } else if (state is ScoreCalculated) {
-                              scoreBoardList = state.scoreBoardList;
-                              totalMoneyRow = state.totalMoneyRow;
-                              if (scoreBoardList.length > 0) {
-                                return Column(
-                                  children: <Widget>[
-                                    buildPlayerLoaded(),
-                                    scoreBoard(widget.playerList,
-                                        scoreBoardList, totalMoneyRow),
-                                  ],
-                                );
-                              }
-                              else{
-                                return Column(
-                                  children: <Widget>[
-                                    buildPlayerLoaded(),
-                                  ],
-                                );
-
-                              }
+                            return buildPlayerLoaded();
+                          } else if (state is ScoreCalculated) {
+                            scoreBoardList = state.scoreBoardList;
+                            totalMoneyRow = state.totalMoneyRow;
+                            if (scoreBoardList.length > 0) {
+                              return Column(
+                                children: <Widget>[
+                                  buildPlayerLoaded(),
+                                  scoreBoard(widget.playerList, scoreBoardList,
+                                      totalMoneyRow),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                children: <Widget>[
+                                  buildPlayerLoaded(),
+                                ],
+                              );
+                            }
 //                              columnList = state.columnList;
 //                              print(columnList);
 //                              rowList = state.rowList;
@@ -119,9 +117,9 @@ class _GamePageState extends State<GamePage> {
 //                              }
 //                              print(rowList);
 //                              print("ScoreBoard = $scoreBoardList}");
-                            } else {
-                              return CircularProgressIndicator();
-                            }
+                          } else {
+                            return CircularProgressIndicator();
+                          }
 //                        else if (state is PlayerLoaded) {
 //                          print("Player Loaed $i");
 //                          i++;
@@ -134,80 +132,84 @@ class _GamePageState extends State<GamePage> {
 //                            ],
 //                          );
 //                        }
+                        },
+                      ),
+                    )),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => MyApp()),
+                              (Route<dynamic> route) => false,
+                            );
+
+                            // ignore: close_sinks
+//                            final playerBloc =
+//                                BlocProvider.of<PlayerBlocBloc>(context);
+//                            playerBloc.add(GoToHomePage());
+                            Hive.close();
                           },
-                        ),
-                      )),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        GestureDetector(
+                          child: Icon(
+                            Icons.home,
+                            size: 30.0,
+                          )),
+                      Row(
+                        children: <Widget>[
+                          GestureDetector(
                             onTap: () {
-                              Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => MyApp()));
-                              // ignore: close_sinks
-                              final playerBloc =
-                                  BlocProvider.of<PlayerBlocBloc>(context);
-                              playerBloc.add(GoToHomePage());
-                              Hive.close();
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (_) => ScoreBoard(
+                                        playerList: widget.playerList,
+                                        game: widget.game,
+                                      )));
                             },
-                            child: Icon(
-                              Icons.home,
-                              size: 30.0,
-                            )),
-                        Row(
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => ScoreBoard(
-                                          playerList: widget.playerList,
-                                          game: widget.game,
-                                        )));
-                              },
-                              child: Chip(
-                                backgroundColor: Colors.black87,
-                                label: Text(
-                                  "Scoreboard",
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600),
-                                ),
+                            child: Chip(
+                              backgroundColor: Colors.black87,
+                              label: Text(
+                                "Scoreboard",
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600),
                               ),
                             ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (_) =>
-                                          SettingsPage(game: widget.game)));
-                                },
-                                child: Icon(
-                                  Icons.settings,
-                                  size: 30,
-                                )),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) =>
+                                        SettingsPage(game: widget.game)));
+                              },
+                              child: Icon(
+                                Icons.settings,
+                                size: 30,
+                              )),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              )),
-        ),
-      ),
-    );
+                ),
+              ],
+            ),
+          ),
+        ));
   }
 
   Widget buildPlayerLoaded() {
-    return Container(
-      padding: EdgeInsets.all(5),
-      child: Container(
-        height: 630,
-        decoration: BoxDecoration(
+    return Builder(
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(5),
+          child: Container(
+            height: 630,
+            decoration: BoxDecoration(
 
 //            gradient: LinearGradient(
 //              begin: Alignment.topCenter,
@@ -218,55 +220,55 @@ class _GamePageState extends State<GamePage> {
 //                Colors.white,
 //              ],
 //            ),
-            borderRadius: BorderRadius.circular(10)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              height: 50,
-              decoration: BoxDecoration(
-                color: Color(0xfff0f7ff),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(
-                    "Name",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    "Winner",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    "Seen",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    "Dubli",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    "Maal",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-            Column(
+                borderRadius: BorderRadius.circular(10)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                SizedBox(
-                  height: 0,
-                ),
                 Container(
-                  margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                  padding: EdgeInsets.all(10),
-                  height: 500,
-                  width: 400,
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  height: 50,
                   decoration: BoxDecoration(
-                      color: Color(0xfff0f7ff),
+                    color: Color(0xfff0f7ff),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      Text(
+                        "Name",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        "Winner",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        "Seen",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        "Dubli",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        "Maal",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 0,
+                    ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                      padding: EdgeInsets.all(10),
+                      height: 500,
+                      width: 400,
+                      decoration: BoxDecoration(
+                          color: Color(0xfff0f7ff),
 //                      gradient: LinearGradient(
 //                        begin: Alignment.topCenter,
 //                        end: Alignment.bottomCenter,
@@ -276,89 +278,91 @@ class _GamePageState extends State<GamePage> {
 //                          Colors.red[200],
 //                        ],
 //                      ),
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Center(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.vertical,
-                      itemCount: widget.playerList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        var player = widget.playerList[index];
-                        return Card(
-                            elevation: 10,
-                            color: Colors.white,
-                            child: buildPlayerWidget(player));
-                      },
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Center(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.vertical,
+                          itemCount: widget.playerList.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            var player = widget.playerList[index];
+                            return Card(
+                                elevation: 10,
+                                color: Colors.white,
+                                child: buildPlayerWidget(player));
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Color(0xfff0f7ff),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xfff0f7ff),
 
-                borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10),
 //                  gradient: LinearGradient(
 //                      begin: Alignment.topCenter,
 //                      end: Alignment.bottomCenter,
 //                      colors: [Colors.red[100], Colors.red[100]])
-              ),
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    RaisedButton(
-                      child: Text("Calculate"),
-                      onPressed: () {
-//                        print(game.ratePerPoint);
-                        int totalPlayers = widget.playerList.length;
-                        sum = 0;
-                        int totalWinner = 0;
-                        for (Player player in widget.playerList) {
-                          if (player.winner) {
-                            totalWinner = 1;
-                          }
-                          sum += player.maal;
-                          if (player.dubli && player.winner) {
-                            sum = sum + 5;
-                          }
-                        }
-                        if (totalWinner != 1) {
-                          final snackBar = SnackBar(
-                            content: Text('Please select a winner.'),
-                            action: SnackBarAction(
-                              label: 'Undo',
-                              onPressed: () {
-                                // Some code to und `o the change.
-                              },
-                            ),
-                          );
-                          Scaffold.of(context).showSnackBar(snackBar);
-                        } else {
-                          totalMaal = sum;
-                          calculateList(totalPlayers, totalMaal);
-                        }
-                      },
-                    ),
-                    Row(
+                  ),
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Text(
-                          "Last Game Maal: ",
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        RaisedButton(
+                          child: Text("Calculate"),
+                          onPressed: () {
+//                        print(game.ratePerPoint);
+                            int totalPlayers = widget.playerList.length;
+                            sum = 0;
+                            int totalWinner = 0;
+                            for (Player player in widget.playerList) {
+                              if (player.winner) {
+                                totalWinner = 1;
+                              }
+                              sum += player.maal;
+                              if (player.dubli && player.winner) {
+                                sum = sum + 5;
+                              }
+                            }
+                            if (totalWinner != 1) {
+                              final snackBar = SnackBar(
+                                content: Text('Please select a winner.'),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  onPressed: () {
+                                    // Some code to und `o the change.
+                                  },
+                                ),
+                              );
+                              Scaffold.of(context).showSnackBar(snackBar);
+                            } else {
+                              totalMaal = sum;
+                              calculateList(totalPlayers, totalMaal);
+                            }
+                          },
                         ),
-                        Text(
-                          sum.toString(),
-                          style: TextStyle(fontWeight: FontWeight.w500),
+                        Row(
+                          children: <Widget>[
+                            Text(
+                              "Last Game Maal: ",
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            Text(
+                              sum.toString(),
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ]),
+                      ]),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -606,6 +610,6 @@ class _GamePageState extends State<GamePage> {
     }).toList();
 
     dataRowList.insert(0, totalMoneyRow);
-    print(dataRowList);
+//    print(dataRowList);
   }
 }

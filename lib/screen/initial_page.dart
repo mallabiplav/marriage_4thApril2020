@@ -26,7 +26,6 @@ class _InitialPageState extends State<InitialPage> {
 //    Hive.registerAdapter(GameAdapter());
   }
 
-
 //  Player player;
   Game game;
 
@@ -42,7 +41,7 @@ class _InitialPageState extends State<InitialPage> {
     return FutureBuilder(
       future: Hive.openBox('previousGames'),
       builder: (context, snapshot) {
-        print("Snapshot: $snapshot");
+//        print("Snapshot: $snapshot");
         if (snapshot.connectionState == ConnectionState.done) {
           List listOfPreviousGames = snapshot.data.get(0);
 //          print(snapshot.data.length);
@@ -76,10 +75,9 @@ class _InitialPageState extends State<InitialPage> {
                         } else if (state is PlayerLoaded) {
                           game = state.game;
                           return listOfPlayers(state.playerList, state.game);
-                        }
-                        else if(state is PlayerDeleted){
+                        } else if (state is PlayerDeleted) {
                           return CircularProgressIndicator();
-                        }else {
+                        } else {
                           return CircularProgressIndicator();
                         }
                       },
@@ -170,7 +168,7 @@ class _InitialPageState extends State<InitialPage> {
               height: 15,
             ),
             Container(
-              height: 370 ,
+              height: 370,
               child: ListView.builder(
                 itemCount: listOfPreviousGames.length,
                 itemBuilder: (context, int index) {
@@ -362,7 +360,6 @@ class _InitialPageState extends State<InitialPage> {
                         text: game.ratePerPoint.toString()),
                     keyboardType:
                         TextInputType.numberWithOptions(decimal: false),
-
                     onChanged: (value) {
                       game.ratePerPoint = int.parse(value);
                     },

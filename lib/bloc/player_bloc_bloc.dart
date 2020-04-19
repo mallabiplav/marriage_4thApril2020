@@ -59,6 +59,10 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
     }
     if (event is SetRules) {
       game = event.gamerules;
+      if(scoreBoardList.length > 0){
+        DataRow totalMoneyRow = getTotalMoney(playerList, scoreBoardList);
+        yield ScoreCalculated(scoreBoardList, totalMoneyRow);
+      }
     }
     if (event is AddPlayer) {
       playerList.insert(0, event.player);
@@ -121,7 +125,7 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       yield ScoreCalculated(scoreBoardList, totalMoneyRow);
     }
     if(event is GetTotalMoney){
-      print("ScoreboadList $scoreBoardList");
+//      print("ScoreboadList $scoreBoardList");
       DataRow totalMoneyRow = getTotalMoney(playerList, scoreBoardList);
       previousGamesInstance.scoreBoardList = scoreBoardList;
       previousGamesInstance.playerList = playerList;
@@ -223,13 +227,12 @@ class PlayerBlocBloc extends Bloc<PlayerBlocEvent, PlayerBlocState> {
       tempList.insert(winnerIndex, temp * -1);
       scoreBoardList.insert(0, tempList);
 
-      print("AAAA");
 
 //      getColumns(playerList);
 //      getRows(playerList, scoreBoardList);
       DataRow totalMoneyRow = getTotalMoney(playerList, scoreBoardList);
 
-      print(totalMoneyRow);
+//      print(totalMoneyRow);
       previousGamesInstance.scoreBoardList = scoreBoardList;
       previousGamesInstance.playerList = playerList;
       previousGamesInstance.game = game;

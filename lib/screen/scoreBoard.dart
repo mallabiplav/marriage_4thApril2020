@@ -12,7 +12,8 @@ class ScoreBoard extends StatefulWidget {
 
   const ScoreBoard({
     Key key,
-    @required this.playerList,this.game,
+    @required this.playerList,
+    this.game,
   }) : super(key: key);
 
   @override
@@ -28,7 +29,6 @@ class _ScoreBoardState extends State<ScoreBoard> {
 
   @override
   Widget build(BuildContext context) {
-
     double columnSpacing;
     switch (widget.playerList.length) {
       case (2):
@@ -44,102 +44,101 @@ class _ScoreBoardState extends State<ScoreBoard> {
         columnSpacing = 20;
         break;
     }
-    return WillPopScope(
-      onWillPop: () {
-        Navigator.of(context).pop();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.blue[100],
-        body: SafeArea(
-          child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
-            builder: (context, state) {
-              if (state is ScoreCalculated) {
-                scoreBoardList = state.scoreBoardList;
-                totalMoneyRow = state.totalMoneyRow;
-                return Container(
-                  padding: EdgeInsets.all(2),
-                  height: MediaQuery.of(context).size.height,
-                  margin: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Color(0xfff0f7ff),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.all(10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Icon(
-                                Icons.arrow_back,
-                                size: 30,
-                              ),
+    return Scaffold(
+      backgroundColor: Colors.blue[100],
+      body: SafeArea(
+        child: BlocBuilder<PlayerBlocBloc, PlayerBlocState>(
+          builder: (context, state) {
+            if (state is ScoreCalculated) {
+              scoreBoardList = state.scoreBoardList;
+              totalMoneyRow = state.totalMoneyRow;
+              return Container(
+                padding: EdgeInsets.all(2),
+                height: MediaQuery.of(context).size.height,
+                margin: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Color(0xfff0f7ff),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          GestureDetector(
+                            onTap: () =>
+                                Navigator.pop(context),
+                            child: Icon(
+                              Icons.arrow_back,
+                              size: 30,
                             ),
-                            Text(
-                              "Scoreboard",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 18,
-                                letterSpacing: 2,
-                              ),
+                          ),
+                          Text(
+                            "Scoreboard",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                              letterSpacing: 2,
                             ),
-                            Text(
-                              "Rounds: ${((scoreBoardList.length) - 1).toString()}",
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            )
-                          ],
-                        ),
+                          ),
+                          Text(
+                            "Rounds: ${(scoreBoardList.length).toString()}",
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          )
+                        ],
                       ),
-                      Expanded(
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
                         child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: Container(
-                              child: DataTable(
-                                dataRowHeight: 50,
-                                columnSpacing: columnSpacing,
-                                columns:
-                                    widget.playerList.map<DataColumn>((player) {
-                                      getDataRows(scoreBoardList, totalMoneyRow);
-                                      return DataColumn(
-                                    label: Text(player.playerName),
-                                  );
-                                }).toList(),
-                                rows: dataRowList,
-                              ),
+                          scrollDirection: Axis.vertical,
+                          child: Container(
+                            child: DataTable(
+                              dataRowHeight: 60,
+                              columnSpacing: columnSpacing,
+                              columns:
+                                  widget.playerList.map<DataColumn>((player) {
+                                getDataRows(scoreBoardList, totalMoneyRow);
+                                return DataColumn(
+                                  label: Text(player.playerName),
+                                );
+                              }).toList(),
+                              rows: dataRowList,
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              }
-              else{
-                return Container();
-              }
-            },
-          ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
         ),
       ),
     );
   }
+
   void getDataRows(scoreBoardList, totalMoneyRow) {
     dataRowList = scoreBoardList.asMap().entries.map<DataRow>((itemRow) {
       return DataRow(
         onSelectChanged: (value) {
           AlertDialog alert = AlertDialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: new BorderRadius.circular(15)),
-            title: Text("Do you want to delete this round?", style: TextStyle(fontSize: 15),),
+            shape: RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(15)),
+            title: Text(
+              "Do you want to delete this round?",
+              style: TextStyle(fontSize: 15),
+            ),
             actions: [
               FlatButton(
                 child: Text("Yes"),
@@ -196,7 +195,7 @@ class _ScoreBoardState extends State<ScoreBoard> {
                     child: Text(
                       (p / widget.game.ratePerPoint).abs().toStringAsFixed(0),
                       style:
-                      TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+                          TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
                     )),
               ],
             ),
@@ -206,9 +205,8 @@ class _ScoreBoardState extends State<ScoreBoard> {
     }).toList();
 
     dataRowList.insert(0, totalMoneyRow);
-    print(dataRowList);
+//    print(dataRowList);
   }
-
 }
 
 Widget textView(List<Widget> list) {
